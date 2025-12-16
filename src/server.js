@@ -7,6 +7,7 @@ import { fileURLToPath } from "url";
 
 import { productManager } from "./managers/product-manager.js";
 import { cartManager } from "./managers/cart-manager.js";
+import viewsRouter from "./routes/views.router.js"; 
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -22,28 +23,10 @@ server.engine("handlebars", engine());
 server.set("view engine", "handlebars");
 server.set("views", path.join(__dirname, "views"));
 
+server.use("/", viewsRouter);
+
 const httpServer = createServer(server);
 const io = new SocketIOServer(httpServer);
-
-/* ----------------------------- VIEWS ----------------------------- */
-
-server.get("/", async (req, res) => {
-  try {
-    const products = await productManager.getAll();
-    res.render("home", { products });
-  } catch (error) {
-    res.status(500).send(error.message);
-  }
-});
-
-server.get("/realtimeproducts", async (req, res) => {
-  try {
-    const products = await productManager.getAll();
-    res.render("realTimeProducts", { products });
-  } catch (error) {
-    res.status(500).send(error.message);
-  }
-});
 
 /* ----------------------------- SOCKETS ----------------------------- */
 
@@ -53,7 +36,7 @@ io.on("connection", async (socket) => {
   socket.on("new-product", async (payload) => {
     try {
       await productManager.create(payload);
-      io.emit("array-productos", await productManager.getAll()); 
+      io.emit("array-productos", await productManager.getAll());
     } catch (err) {
       socket.emit("errorMsg", err.message);
     }
@@ -62,7 +45,7 @@ io.on("connection", async (socket) => {
   socket.on("delete-product", async (id) => {
     try {
       await productManager.delete(id);
-      io.emit("array-productos", await productManager.getAll()); 
+      io.emit("array-productos", await productManager.getAll());
     } catch (err) {
       socket.emit("errorMsg", err.message);
     }

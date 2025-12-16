@@ -5,7 +5,6 @@ const createForm = document.getElementById("createForm");
 const deleteForm = document.getElementById("deleteForm");
 const errorP = document.getElementById("error");
 
-// El server nos manda la lista actualizada
 socket.on("array-productos", (products) => {
   productsList.innerHTML = "";
   for (const p of products) {
@@ -15,7 +14,6 @@ socket.on("array-productos", (products) => {
   }
 });
 
-// Para mostrar errores (si algo falla)
 socket.on("errorMsg", (msg) => {
   errorP.textContent = msg;
 });
