@@ -12,6 +12,8 @@
   "description": "",
   "dependencies": {
     "express": "^5.1.0",
+    "express-handlebars": "^8.0.1",
+    "socket.io": "^4.8.1",
     "uuid": "^13.0.0"
   }
 }

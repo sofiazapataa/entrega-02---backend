@@ -1,11 +1,73 @@
 import express from "express";
+import { createServer } from "http";
+import { Server as SocketIOServer } from "socket.io";
+import { engine } from "express-handlebars";
+import path from "path";
+import { fileURLToPath } from "url";
+
 import { productManager } from "./managers/product-manager.js";
 import { cartManager } from "./managers/cart-manager.js";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const server = express();
 const port = 8080;
 
 server.use(express.json());
+
+server.use(express.static(path.join(__dirname, "public")));
+
+server.engine("handlebars", engine());
+server.set("view engine", "handlebars");
+server.set("views", path.join(__dirname, "views"));
+
+const httpServer = createServer(server);
+const io = new SocketIOServer(httpServer);
+
+/* ----------------------------- VIEWS ----------------------------- */
+
+server.get("/", async (req, res) => {
+  try {
+    const products = await productManager.getAll();
+    res.render("home", { products });
+  } catch (error) {
+    res.status(500).send(error.message);
+  }
+});
+
+server.get("/realtimeproducts", async (req, res) => {
+  try {
+    const products = await productManager.getAll();
+    res.render("realTimeProducts", { products });
+  } catch (error) {
+    res.status(500).send(error.message);
+  }
+});
+
+/* ----------------------------- SOCKETS ----------------------------- */
+
+io.on("connection", async (socket) => {
+  socket.emit("array-productos", await productManager.getAll());
+
+  socket.on("new-product", async (payload) => {
+    try {
+      await productManager.create(payload);
+      io.emit("array-productos", await productManager.getAll()); 
+    } catch (err) {
+      socket.emit("errorMsg", err.message);
+    }
+  });
+
+  socket.on("delete-product", async (id) => {
+    try {
+      await productManager.delete(id);
+      io.emit("array-productos", await productManager.getAll()); 
+    } catch (err) {
+      socket.emit("errorMsg", err.message);
+    }
+  });
+});
 
 /* ----------------------------- PRODUCTS ----------------------------- */
 
@@ -88,6 +150,6 @@ server.post("/api/carts/:cid/product/:pid", async (req, res) => {
   }
 });
 
-server.listen(port, () => {
+httpServer.listen(port, () => {
   console.log(`Server listening on port ${port}`);
 });
