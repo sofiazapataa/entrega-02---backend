@@ -72,3 +72,5 @@ class ProductManager {
 }
 
 export const productManager = new ProductManager("./data/products.json");
+
+//  este sabe: leer productos, buscar uno por id, crear, editar, borrar.

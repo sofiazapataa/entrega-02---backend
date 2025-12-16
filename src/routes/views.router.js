@@ -22,3 +22,8 @@ router.get("/realtimeproducts", async (req, res) => {
 });
 
 export default router;
+
+// Define qué página se muestra cuando entrás a: /realtimeproducts
+
+
+

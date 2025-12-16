@@ -88,3 +88,5 @@ class CartManager {
 }
 
 export const cartManager = new CartManager("./data/carts.json");
+
+//  este sabe: crear carrito, traer un carrito, agregar producto a carrito.
